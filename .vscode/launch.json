@@ -13,13 +13,12 @@
                 "-r",
                 "ts-node/register",
                 "-r",
-                "tsconfig-paths/register"
+                "tsconfig-paths/register",
             ],
             "sourceMaps": true,
             "envFile": "${workspaceFolder}/api/.env",
             "cwd": "${workspaceRoot}/api",
             "console": "integratedTerminal",
-            "protocol": "inspector"
         }
     ]
   }

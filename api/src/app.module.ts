@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BookingModule } from './booking/booking.module';
 import { ServiceModule } from './service/service.module';
 import { SettingsModule } from './settings/settings.module';
+import { HolidayModule } from './holiday/holiday.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { SettingsModule } from './settings/settings.module';
         entities: ['**/*.entity{.ts,.js}'],
       }),
     }),
+    HolidayModule,
     BookingModule,
     ServiceModule,
     SettingsModule,
