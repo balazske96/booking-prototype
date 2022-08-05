@@ -1,4 +1,5 @@
-import { IsString, MaxLength } from 'class-validator';
+import { IsNumber, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsNull } from 'typeorm';
 
 export class CreateServiceDto {
   @IsString()
@@ -8,4 +9,9 @@ export class CreateServiceDto {
   @IsString()
   @MaxLength(100)
   displayName: string;
+
+  @IsNumber()
+  @Max(480)
+  @Min(5)
+  lengthInMinutes: number;
 }

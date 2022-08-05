@@ -36,7 +36,8 @@ export class ServiceController {
     const newService = new Service();
     newService.description = createServiceDto.description;
     newService.displayName = createServiceDto.displayName;
-    newService.save();
+    newService.lengthInMinutes = createServiceDto.lengthInMinutes;
+    await newService.save();
 
     return {
       message: 'service successfully created',
@@ -98,6 +99,8 @@ export class ServiceController {
 
     serviceToFind.description = updateServiceDto.description;
     serviceToFind.displayName = updateServiceDto.displayName;
+    serviceToFind.lengthInMinutes = updateServiceDto.lengthInMinutes;
+
     serviceToFind.save();
 
     return {

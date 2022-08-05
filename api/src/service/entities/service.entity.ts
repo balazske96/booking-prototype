@@ -1,4 +1,5 @@
 import { Exclude } from 'class-transformer';
+import { Booking } from 'src/booking/entities/booking.entity';
 import {
   Column,
   Entity,
@@ -6,9 +7,10 @@ import {
   BaseEntity,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 
-@Entity()
+@Entity('service')
 export class Service extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -18,6 +20,12 @@ export class Service extends BaseEntity {
 
   @Column('varchar', { name: 'description', length: 300 })
   description: string;
+
+  @Column('smallint', { name: 'length_in_minutes' })
+  lengthInMinutes: number;
+
+  @OneToMany(() => Booking, (booking) => booking.service)
+  bookings: Booking[];
 
   @Exclude()
   @CreateDateColumn({ name: 'created_at' })

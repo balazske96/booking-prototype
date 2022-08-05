@@ -17,7 +17,7 @@ import { ServiceModule } from './service/service.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: ['dist/**/*.entity{.ts,.js}'],
+        entities: ['**/*.entity{.ts,.js}'],
       }),
     }),
     BookingModule,

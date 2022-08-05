@@ -12,6 +12,7 @@ services:
       MYSQL_DATABASE: booking
       MYSQL_USER: booking
       MYSQL_PASSWORD: booking
+      TZ: Europe/Budapest
     ports:
       - "3306:3306"
     volumes:
