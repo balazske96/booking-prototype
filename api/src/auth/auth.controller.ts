@@ -14,7 +14,7 @@ import { LoginDto } from './dto/login.dto';
 import { TokenRefreshDto } from './dto/token-refresh.dto';
 import { RegisterUserDto } from './dto/register.dto';
 import { User } from './entities/user.entity';
-import { JwtAuthGuard } from './infrastructure/hwt.guard';
+import { JwtAuthGuard } from './infrastructure/jwt.guard';
 
 @Controller('auth')
 export class AuthController {
