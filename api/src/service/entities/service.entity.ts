@@ -1,5 +1,5 @@
 import { Exclude } from 'class-transformer';
-import { Booking } from 'src/booking/entities/booking.entity';
+import { Booking } from '../../booking/entities/booking.entity';
 import {
   Column,
   Entity,

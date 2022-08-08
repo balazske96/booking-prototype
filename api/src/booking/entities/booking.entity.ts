@@ -1,7 +1,8 @@
 import * as moment from 'moment';
-import { Service } from 'src/service/entities/service.entity';
+import { Service } from '../../service/entities/service.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { CreateDateColumn, UpdateDateColumn, BaseEntity } from 'typeorm';
+import { BookingContactMethod } from './booking-contact-method.enum';
 
 import { BookingStatus } from './booking-status.enum';
 
@@ -19,8 +20,18 @@ export class Booking extends BaseEntity {
   @Column('smallint', { name: 'length_of_service_in_minutes' })
   lengthOfServiceInMinutes: number;
 
+  @Column('enum', {
+    name: 'contact_method',
+    enum: BookingContactMethod,
+    default: BookingContactMethod.EMAIL,
+  })
+  contactMethod: BookingContactMethod;
+
   @Column('varchar', { nullable: false, name: 'email', length: 320 })
   email: string;
+
+  @Column('varchar', { length: 100, nullable: true })
+  phone: string;
 
   @Column('varchar', { length: 200, name: 'comment', nullable: true })
   comment: string;
