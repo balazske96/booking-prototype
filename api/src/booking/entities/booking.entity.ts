@@ -98,13 +98,13 @@ export class Booking extends BaseEntity {
 
         // Booking start is between another booking start and end
         const startIsOverlapping =
-          timeOfBookingStartAsMoment > existingBookingStartAsMoment &&
-          timeOfBookingStartAsMoment < existingBookingEndAsMoment;
+          timeOfBookingStartAsMoment >= existingBookingStartAsMoment &&
+          timeOfBookingStartAsMoment <= existingBookingEndAsMoment;
 
         // Booking end is between another booking start end and
         const endIsOverlapping =
-          timeOfBookingEndAsMoment > existingBookingStartAsMoment &&
-          timeOfBookingEndAsMoment < existingBookingEndAsMoment;
+          timeOfBookingEndAsMoment >= existingBookingStartAsMoment &&
+          timeOfBookingEndAsMoment <= existingBookingEndAsMoment;
 
         return startIsOverlapping || endIsOverlapping;
       },

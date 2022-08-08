@@ -6,6 +6,8 @@ import { ServiceModule } from './service/service.module';
 import { SettingsModule } from './settings/settings.module';
 import { HolidayModule } from './holiday/holiday.module';
 import { AuthModule } from './auth/auth.module';
+import { EmailModule } from './email/email.module';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -20,7 +22,7 @@ import { AuthModule } from './auth/auth.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: ['dist/**/*.entity.js'],
+        entities: [join(__dirname, '**', '*.entity.{ts,js}')],
       }),
     }),
     HolidayModule,
@@ -28,6 +30,7 @@ import { AuthModule } from './auth/auth.module';
     ServiceModule,
     SettingsModule,
     AuthModule,
+    EmailModule,
   ],
 })
 export class AppModule {}

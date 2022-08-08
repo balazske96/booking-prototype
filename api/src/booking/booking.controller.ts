@@ -13,9 +13,12 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Booking } from './entities/booking.entity';
 import { Service } from 'src/service/entities/service.entity';
+import { EmailService } from 'src/email/email.service';
 
 @Controller('booking')
 export class BookingController {
+  constructor(private emailService: EmailService) {}
+
   @Post()
   async create(@Body() createBookingDto: CreateBookingDto) {
     const serviceId = createBookingDto.serviceId;
@@ -50,6 +53,8 @@ export class BookingController {
     newBooking.lengthOfServiceInMinutes = service.lengthInMinutes;
     newBooking.service = service;
     await newBooking.save();
+
+    this.emailService.sendWeGotTheBookingMail(newBooking);
 
     return {
       message: 'ok',
