@@ -27,22 +27,6 @@ export class BookingController {
     if (!service)
       throw new NotFoundException('service with the specified id not found');
 
-    const bookingIsOverlapping =
-      await Booking.isBookingOverlappingWithOtherBookings(
-        createBookingDto.date,
-        createBookingDto.time,
-        service.lengthInMinutes,
-      );
-
-    if (bookingIsOverlapping) {
-      return {
-        message: 'the selected time is overlapping with other bookings',
-        errors: {
-          time: ['the selected time is overlapping with other bookings'],
-        },
-      };
-    }
-
     const newBooking = new Booking();
     newBooking.comment = createBookingDto.comment;
     newBooking.date = createBookingDto.date;
@@ -140,7 +124,7 @@ export class BookingController {
     if (!bookingToDelete)
       throw new NotFoundException('booking with the specified id not found');
 
-    await bookingToDelete.remove();
+    await bookingToDelete.softRemove();
 
     return {
       message: 'booking successfully deleted',

@@ -1,6 +1,12 @@
 import * as moment from 'moment';
 import { Service } from '../../service/entities/service.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  DeleteDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { CreateDateColumn, UpdateDateColumn, BaseEntity } from 'typeorm';
 import { BookingContactMethod } from './booking-contact-method.enum';
 
@@ -57,6 +63,9 @@ export class Booking extends BaseEntity {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deletedDate: Date;
 
   getTimeOfBookingStartAsMoment(): moment.Moment {
     return moment(this.time, 'HH:mm:ss');
