@@ -1,0 +1,23 @@
+{{#> default-layout }}
+<h1>Kedves {{lastName}} {{firstName}}!</h1>
+<p>Foglalását töröltük</p>
+<h2>Foglalás részletei:</h2>
+<table>
+    <tr>
+        <td>Foglalás dátuma:</td>
+        <td>{{date}}</td>
+    </tr>
+    <tr>
+        <td>Foglalás időpontja:</td>
+        <td>{{time}}</td>
+    </tr>
+    <tr>
+        <td>Szolgáltatás neve:</td>
+        <td>{{serviceName}}</td>
+    </tr>
+    <tr>
+        <td>Szolgáltatás hossza:</td>
+        <td>{{serviceLength}} perc</td>
+    </tr>
+</table>
+{{/default-layout}}

@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, NotFoundException } from '@nestjs/common';
 
 @Entity('service')
 export class Service extends BaseEntity {
@@ -35,6 +35,23 @@ export class Service extends BaseEntity {
   @Exclude()
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  static async getById(id: string): Promise<Service> {
+    const service = await Service.findOneBy({ id });
+
+    if (!service)
+      throw new HttpException(
+        {
+          message: 'not found',
+          errors: {
+            id: 'booking with the specified id not found',
+          },
+        },
+        HttpStatus.NOT_FOUND,
+      );
+
+    return service;
+  }
 
   static async validateIfServiceExists(id: string) {
     const service = await Service.findOneBy({ id: id });

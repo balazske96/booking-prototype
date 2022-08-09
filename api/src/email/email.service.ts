@@ -1,21 +1,18 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
-import { Booking } from 'src/booking/entities/booking.entity';
+import { IMailable } from './infrastructure/mailable.interface';
 
 @Injectable()
 export class EmailService {
   constructor(private mailerService: MailerService) {}
 
-  async sendWeGotTheBookingMail(booking: Booking) {
+  async sendMailable(mailable: IMailable) {
     await this.mailerService.sendMail({
-      to: booking.email,
-      subject: 'Megkaptuk foglalási szándékát',
-      template: './we-got-your-booking-request',
-      context: {
-        preheader: 'Foglalási szándéka beérkezett rendszerünkbe!',
-        firstName: booking.firstName,
-        lastName: booking.lastName,
-      },
+      to: mailable.to,
+      from: mailable.from,
+      subject: mailable.subject,
+      template: mailable.template,
+      context: mailable.getContext(),
     });
   }
 }

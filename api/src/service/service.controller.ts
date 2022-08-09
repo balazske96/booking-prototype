@@ -6,7 +6,6 @@ import {
   Param,
   Delete,
   Put,
-  NotFoundException,
   ClassSerializerInterceptor,
   UseInterceptors,
 } from '@nestjs/common';
@@ -59,10 +58,7 @@ export class ServiceController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    const service = await Service.findOneBy({ id: id });
-
-    if (!service)
-      throw new NotFoundException('service with the specified id not found');
+    const service = await Service.getById(id);
 
     return {
       message: 'ok',
@@ -92,10 +88,7 @@ export class ServiceController {
       };
     }
 
-    const serviceToFind = await Service.findOneBy({ id: id });
-
-    if (!serviceToFind)
-      throw new NotFoundException('service with the specified id not found');
+    const serviceToFind = await Service.getById(id);
 
     serviceToFind.description = updateServiceDto.description;
     serviceToFind.displayName = updateServiceDto.displayName;
@@ -111,10 +104,7 @@ export class ServiceController {
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    const serviceToFind = await Service.findOneBy({ id: id });
-
-    if (!serviceToFind)
-      throw new NotFoundException('service with the specified id not found');
+    const serviceToFind = await Service.getById(id);
 
     await serviceToFind.remove();
 

@@ -6,12 +6,13 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  SelectQueryBuilder,
 } from 'typeorm';
 import { CreateDateColumn, UpdateDateColumn, BaseEntity } from 'typeorm';
 import { BookingContactMethod } from './booking-contact-method.enum';
-
 import { BookingStatus } from './booking-status.enum';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { ReadAllBookingDto } from '../dto/read-all-booking.dto';
 
 @Entity()
 export class Booking extends BaseEntity {
@@ -52,7 +53,7 @@ export class Booking extends BaseEntity {
   @Column('enum', {
     name: 'status',
     enum: BookingStatus,
-    default: BookingStatus.CREATED,
+    default: BookingStatus.NEW,
   })
   status: BookingStatus;
 
@@ -79,6 +80,26 @@ export class Booking extends BaseEntity {
 
   static getTimeAsMoment(time: string): moment.Moment {
     return moment(time, 'HH:mm:ss');
+  }
+
+  static async getById(id: string): Promise<Booking> {
+    const booking = await Booking.findOne({
+      where: { id: id },
+      relations: ['service'],
+    });
+
+    if (!booking)
+      throw new HttpException(
+        {
+          message: 'not found',
+          errors: {
+            id: 'booking with the specified id not found',
+          },
+        },
+        HttpStatus.NOT_FOUND,
+      );
+
+    return booking;
   }
 
   static addMinutesToMoment(
@@ -135,6 +156,7 @@ export class Booking extends BaseEntity {
 
     let allBookingOnTheGivenDay = await Booking.findBy({
       date: dateOfBooking,
+      status: BookingStatus.APPROVED,
     });
 
     if (bookingToExclude)
@@ -173,5 +195,93 @@ export class Booking extends BaseEntity {
         },
         HttpStatus.OK,
       );
+  }
+
+  private static getFilteredReadAllQueryBuilder(
+    queryParams: ReadAllBookingDto,
+  ): SelectQueryBuilder<Booking> {
+    const {
+      limit,
+      page,
+      firstName,
+      lastName,
+      email,
+      status,
+      beforeDate,
+      afterDate,
+      beforeTime,
+      afterTime,
+      serviceId,
+    } = queryParams;
+
+    const offset = limit * (page - 1);
+
+    const baseQueryBuilder = Booking.createQueryBuilder(
+      'booking',
+    ).leftJoinAndSelect('booking.service', 'service');
+
+    if (firstName)
+      baseQueryBuilder.where('booking.first_name LIKE %:firstName%', {
+        firstName,
+      });
+
+    if (lastName)
+      baseQueryBuilder.andWhere('booking.last_name LIKE %:lastName%', {
+        lastName,
+      });
+
+    if (email)
+      baseQueryBuilder.andWhere('booking.email LIKE %:email%', {
+        email,
+      });
+
+    if (serviceId)
+      baseQueryBuilder.andWhere('service.id = :serviceId', {
+        serviceId,
+      });
+
+    if (status)
+      baseQueryBuilder.andWhere('booking.status = :status', { status });
+
+    if (beforeDate)
+      baseQueryBuilder.andWhere('booking.date <= :beforeDate', { beforeDate });
+
+    if (afterDate)
+      baseQueryBuilder.andWhere('booking.date >= :afterDate', { afterDate });
+
+    if (beforeTime)
+      baseQueryBuilder.andWhere('booking.time <= :beforeTime', { beforeTime });
+
+    if (afterTime)
+      baseQueryBuilder.andWhere('booking.time >= :afterTime', { afterTime });
+
+    baseQueryBuilder.skip(offset).take(limit);
+
+    return baseQueryBuilder;
+  }
+
+  static async findByQueryParams(
+    queryParams: ReadAllBookingDto,
+  ): Promise<Booking[]> {
+    const baseQueryBuilder =
+      Booking.getFilteredReadAllQueryBuilder(queryParams);
+
+    return await baseQueryBuilder.getMany();
+  }
+
+  static async getNumberOfBookingBasedOnFilters(
+    filters: ReadAllBookingDto,
+  ): Promise<number> {
+    return await Booking.getFilteredReadAllQueryBuilder(filters).getCount();
+  }
+
+  static async calculateHasNext(
+    queryParams: ReadAllBookingDto,
+  ): Promise<boolean> {
+    const bookingQueryWithIncreasedPagination = await Booking.findByQueryParams(
+      { ...queryParams, page: queryParams.page + 1 },
+    );
+
+    return bookingQueryWithIncreasedPagination.length > 0;
   }
 }
