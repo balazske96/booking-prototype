@@ -4,13 +4,15 @@ import {
   Get,
   InternalServerErrorException,
   Post,
+  UseGuards,
 } from '@nestjs/common';
-import { updateLocale } from 'moment';
+import { JwtAuthGuard } from 'src/auth/infrastructure/jwt.guard';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
 import { Settings } from './entities/settings.entity';
 
 @Controller('settings')
 export class SettingsController {
+  @UseGuards(JwtAuthGuard)
   @Post()
   async updateSettings(@Body() updateSettings: UpdateSettingsDto) {
     const settings = await Settings.getSettings();

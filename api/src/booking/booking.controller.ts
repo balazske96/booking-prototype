@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -20,6 +21,7 @@ import { BookingStatus } from './entities/booking-status.enum';
 import { BookingApprovedMail } from 'src/email/infrastructure/booking-approved-mail';
 import { BookingCanceledMail } from 'src/email/infrastructure/booking-canceled-mail';
 import { BookingArrived } from 'src/email/infrastructure/booking-arrived';
+import { JwtAuthGuard } from 'src/auth/infrastructure/jwt.guard';
 
 @Controller('booking')
 export class BookingController {
@@ -56,6 +58,7 @@ export class BookingController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Query() readAllQueryParams: ReadAllBookingDto) {
     const bookings = await Booking.findByQueryParams(readAllQueryParams);
@@ -73,6 +76,7 @@ export class BookingController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const booking = await Booking.getById(id);
@@ -83,6 +87,7 @@ export class BookingController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(
     @Param('id') id: string,
@@ -132,6 +137,7 @@ export class BookingController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const bookingToDelete = await Booking.findOneBy({ id: id });

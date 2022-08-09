@@ -8,7 +8,9 @@ import {
   Put,
   ClassSerializerInterceptor,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/infrastructure/jwt.guard';
 
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
@@ -16,6 +18,7 @@ import { Service } from './entities/service.entity';
 
 @Controller('service')
 export class ServiceController {
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @Post()
   async create(@Body() createServiceDto: CreateServiceDto) {
@@ -66,6 +69,7 @@ export class ServiceController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @Put(':id')
   async update(
@@ -102,6 +106,7 @@ export class ServiceController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const serviceToFind = await Service.getById(id);
