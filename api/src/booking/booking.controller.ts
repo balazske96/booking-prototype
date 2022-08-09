@@ -22,10 +22,13 @@ export class BookingController {
   @Post()
   async create(@Body() createBookingDto: CreateBookingDto) {
     const serviceId = createBookingDto.serviceId;
-    const service = await Service.findOneBy({ id: serviceId });
+    await Service.validateIfServiceExists(serviceId);
+    await Booking.validateBookingIsInThePast(
+      createBookingDto.date,
+      createBookingDto.time,
+    );
 
-    if (!service)
-      throw new NotFoundException('service with the specified id not found');
+    const service = await Service.findOneBy({ id: serviceId });
 
     const newBooking = new Booking();
     newBooking.comment = createBookingDto.comment;
@@ -38,7 +41,7 @@ export class BookingController {
     newBooking.service = service;
     await newBooking.save();
 
-    this.emailService.sendWeGotTheBookingMail(newBooking);
+    await this.emailService.sendWeGotTheBookingMail(newBooking);
 
     return {
       message: 'ok',
@@ -83,22 +86,12 @@ export class BookingController {
     if (!service)
       throw new NotFoundException('service with the specified id not found');
 
-    const bookingIsOverlapping =
-      await Booking.isBookingOverlappingWithOtherBookings(
-        updateBookingDto.date,
-        updateBookingDto.time,
-        service.lengthInMinutes,
-        bookingToUpdate,
-      );
-
-    if (bookingIsOverlapping) {
-      return {
-        message: 'the selected time is overlapping with other bookings',
-        errors: {
-          time: ['the selected time is overlapping with other bookings'],
-        },
-      };
-    }
+    await Booking.validateIfBookingIsOverlappingWithOtherBookings(
+      updateBookingDto.date,
+      updateBookingDto.time,
+      service.lengthInMinutes,
+      bookingToUpdate,
+    );
 
     bookingToUpdate.comment = updateBookingDto.comment;
     bookingToUpdate.date = updateBookingDto.date;

@@ -17,10 +17,7 @@ export class CreateBookingDto {
   @IsEmail()
   email: string;
 
-  @ValidateIf((object, value) => {
-    console.log(object);
-    return true;
-  })
+  @ValidateIf((object, value) => value !== null && value !== undefined)
   @IsString()
   @Matches(/((?:\+?3|0)6)(?:-|\()?(\d{1,2})(?:-|\))?(\d{3})-?(\d{3,4})/)
   phone: string;

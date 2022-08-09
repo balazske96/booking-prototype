@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
+import { NotFoundException } from '@nestjs/common';
 
 @Entity('service')
 export class Service extends BaseEntity {
@@ -34,4 +35,11 @@ export class Service extends BaseEntity {
   @Exclude()
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  static async validateIfServiceExists(id: string) {
+    const service = await Service.findOneBy({ id: id });
+
+    if (!service)
+      throw new NotFoundException('service with the specified id not found');
+  }
 }

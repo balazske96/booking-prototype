@@ -11,6 +11,7 @@ import { CreateDateColumn, UpdateDateColumn, BaseEntity } from 'typeorm';
 import { BookingContactMethod } from './booking-contact-method.enum';
 
 import { BookingStatus } from './booking-status.enum';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Entity()
 export class Booking extends BaseEntity {
@@ -88,12 +89,44 @@ export class Booking extends BaseEntity {
     return newMoment.add(minutes, 'minutes');
   }
 
-  static async isBookingOverlappingWithOtherBookings(
+  static async validateBookingIsInThePast(date: string, time: string) {
+    const bookingDateAsMoment = moment(
+      `${date}-${time}`,
+      'YYYY-MM-DD-HH:mm:ss',
+    );
+
+    const dateIsInThePast = moment().isAfter(bookingDateAsMoment, 'day');
+    const timeIsInThePast = moment().isAfter(bookingDateAsMoment, 'second');
+
+    if (dateIsInThePast)
+      throw new HttpException(
+        {
+          message: 'booking date cannot be in the past',
+          errors: {
+            date: 'booking date cannot be in the past',
+          },
+        },
+        HttpStatus.OK,
+      );
+
+    if (timeIsInThePast)
+      throw new HttpException(
+        {
+          message: 'booking time cannot be in the past',
+          errors: {
+            time: 'booking time cannot be in the past',
+          },
+        },
+        HttpStatus.OK,
+      );
+  }
+
+  static async validateIfBookingIsOverlappingWithOtherBookings(
     dateOfBooking: string,
     timeOfBooking: string,
     lengthOfService: number,
     bookingToExclude?: Booking,
-  ): Promise<boolean> {
+  ): Promise<void> {
     const timeOfBookingStartAsMoment = Booking.getTimeAsMoment(timeOfBooking);
     const timeOfBookingEndAsMoment = Booking.addMinutesToMoment(
       timeOfBookingStartAsMoment,
@@ -130,6 +163,15 @@ export class Booking extends BaseEntity {
       },
     );
 
-    return bookingIsOverlapping;
+    if (bookingIsOverlapping)
+      throw new HttpException(
+        {
+          message: 'the selected time is overlapping with other bookings',
+          errors: {
+            time: 'the selected time is overlapping with other bookings',
+          },
+        },
+        HttpStatus.OK,
+      );
   }
 }
