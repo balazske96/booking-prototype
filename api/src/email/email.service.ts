@@ -7,12 +7,15 @@ export class EmailService {
   constructor(private mailerService: MailerService) {}
 
   async sendMailable(mailable: IMailable) {
-    await this.mailerService.sendMail({
+    const content = {
       to: mailable.to,
-      from: mailable.from,
       subject: mailable.subject,
       template: mailable.template,
       context: mailable.getContext(),
-    });
+    };
+
+    if (mailable.from) content['from'] = mailable.from;
+
+    await this.mailerService.sendMail(content);
   }
 }
