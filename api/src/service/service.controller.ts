@@ -34,18 +34,9 @@ export class ServiceController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Post()
   async create(@Body() createServiceDto: CreateServiceDto, @Req() req) {
-    const serviceWithSameDisplayNameExists = await Service.findOneBy({
-      displayName: createServiceDto.displayName,
-    });
-
-    if (serviceWithSameDisplayNameExists) {
-      return {
-        errors: {
-          displayName: ['service with the same displayname already exists'],
-        },
-        message: 'service with the same displayname already exists',
-      };
-    }
+    await Service.validateIfServiceExistsWithTheSameDisplayName(
+      createServiceDto.displayName,
+    );
 
     const newService = new Service();
     newService.description = createServiceDto.description;

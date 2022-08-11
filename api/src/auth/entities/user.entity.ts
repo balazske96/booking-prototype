@@ -9,7 +9,7 @@ import {
 import * as argon2 from 'argon2';
 import * as crypto from 'crypto';
 import { Exclude } from 'class-transformer';
-import { BadRequestException } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -68,8 +68,14 @@ export class User extends BaseEntity {
     const user = await User.findOneBy({ username: username });
 
     if (user)
-      throw new BadRequestException(
-        'user with the same username already exists',
+      throw new HttpException(
+        {
+          message: 'user with the same username already exists',
+          errors: {
+            username: ['user with the same username already exists'],
+          },
+        },
+        HttpStatus.BAD_REQUEST,
       );
   }
 
@@ -77,8 +83,14 @@ export class User extends BaseEntity {
     const user = await User.findOneBy({ email: email });
 
     if (user)
-      throw new BadRequestException(
-        'user with the same email address already exists',
+      throw new HttpException(
+        {
+          message: 'user with the same email address already exists',
+          errors: {
+            email: ['user with the same email address already exists'],
+          },
+        },
+        HttpStatus.BAD_REQUEST,
       );
   }
 }

@@ -10,7 +10,7 @@ import { join } from 'path';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import 'winston-daily-rotate-file';
-import { LoggerMiddleware } from './infrastructure/logger.middleware';
+import { LoggerMiddleware } from './infrastructure/middlewares/logger.middleware';
 
 @Module({
   imports: [

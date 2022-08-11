@@ -6,7 +6,6 @@ import {
   Body,
   Param,
   Delete,
-  NotFoundException,
   Put,
   Query,
   UseGuards,
@@ -40,13 +39,11 @@ export class BookingController {
   @Post()
   async create(@Body() createBookingDto: CreateBookingDto) {
     const serviceId = createBookingDto.serviceId;
-    await Service.validateIfServiceExists(serviceId);
+    const service = await Service.getById(serviceId);
     await Booking.validateBookingIsInThePast(
       createBookingDto.date,
       createBookingDto.time,
     );
-
-    const service = await Service.findOneBy({ id: serviceId });
 
     const newBooking = new Booking();
     newBooking.comment = createBookingDto.comment;
@@ -164,11 +161,7 @@ export class BookingController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string, @Req() req) {
-    const bookingToDelete = await Booking.findOneBy({ id: id });
-
-    if (!bookingToDelete)
-      throw new NotFoundException('booking with the specified id not found');
-
+    const bookingToDelete = await Booking.getById(id);
     await bookingToDelete.softRemove();
 
     this.logger.log({
