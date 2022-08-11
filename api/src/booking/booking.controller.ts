@@ -1,3 +1,4 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   Controller,
   Get,
@@ -9,6 +10,9 @@ import {
   Put,
   Query,
   UseGuards,
+  LoggerService,
+  Inject,
+  Req,
 } from '@nestjs/common';
 
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -27,7 +31,11 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 @ApiTags('booking')
 @Controller('booking')
 export class BookingController {
-  constructor(private emailService: EmailService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
+    private emailService: EmailService,
+  ) {}
 
   @Post()
   async create(@Body() createBookingDto: CreateBookingDto) {
@@ -54,6 +62,8 @@ export class BookingController {
 
     const bookingArrivedMail = new BookingArrived(newBooking);
     await this.emailService.sendMailable(bookingArrivedMail);
+
+    this.logger.log({ message: 'new booking created', booking: newBooking });
 
     return {
       message: 'ok',
@@ -96,6 +106,7 @@ export class BookingController {
   @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(
+    @Req() req,
     @Param('id') id: string,
     @Body() updateBookingDto: UpdateBookingDto,
   ) {
@@ -137,6 +148,12 @@ export class BookingController {
       }
     }
 
+    this.logger.log({
+      message: 'booking updated',
+      booking: bookingToUpdate,
+      userId: req.user.id,
+    });
+
     return {
       message: 'ok',
       data: bookingToUpdate,
@@ -146,13 +163,19 @@ export class BookingController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string, @Req() req) {
     const bookingToDelete = await Booking.findOneBy({ id: id });
 
     if (!bookingToDelete)
       throw new NotFoundException('booking with the specified id not found');
 
     await bookingToDelete.softRemove();
+
+    this.logger.log({
+      message: 'booking deleted',
+      booking: bookingToDelete,
+      userId: req.user.id,
+    });
 
     return {
       message: 'booking successfully deleted',

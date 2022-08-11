@@ -1,9 +1,13 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   Body,
   Controller,
   Get,
+  Inject,
   InternalServerErrorException,
+  LoggerService,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -14,10 +18,15 @@ import { Settings } from './entities/settings.entity';
 @ApiTags('settings')
 @Controller('settings')
 export class SettingsController {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
+  ) {}
+
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post()
-  async updateSettings(@Body() updateSettings: UpdateSettingsDto) {
+  async updateSettings(@Body() updateSettings: UpdateSettingsDto, @Req() req) {
     const settings = await Settings.getSettings();
     settings.mondayStart = updateSettings.mondayStart;
     settings.mondayEnd = updateSettings.mondayEnd;
@@ -34,6 +43,17 @@ export class SettingsController {
     settings.sundayStart = updateSettings.sundayStart;
     settings.sundayEnd = updateSettings.sundayEnd;
     await settings.save();
+
+    this.logger.log({
+      message: 'settings updated',
+      settings: settings,
+      userId: req.user.id,
+    });
+
+    return {
+      message: 'ok',
+      data: settings,
+    };
   }
 
   @Get()

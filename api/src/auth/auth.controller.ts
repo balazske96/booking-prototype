@@ -1,3 +1,4 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   Controller,
   Get,
@@ -8,6 +9,8 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   UnauthorizedException,
+  Inject,
+  LoggerService,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -20,7 +23,11 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
+    private readonly authService: AuthService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
@@ -76,8 +83,9 @@ export class AuthController {
     };
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post('register')
-  async registerUser(@Body() register: RegisterUserDto) {
+  async registerUser(@Body() register: RegisterUserDto, @Req() req) {
     await User.validateIfUserExistWithTheSameUsername(register.username);
     await User.validateIfUserExistWithTheSameEmail(register.email);
 
@@ -97,6 +105,12 @@ export class AuthController {
     const refreshToken = this.authService.generateRefreshToken(user);
     user.refreshToken = refreshToken;
     user.save();
+
+    this.logger.log({
+      message: 'new user registered',
+      user: user,
+      userId: req.user.id,
+    });
 
     return {
       message: 'ok',
