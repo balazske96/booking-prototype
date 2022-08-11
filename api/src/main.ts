@@ -9,6 +9,7 @@ async function bootstrap() {
 
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
+      .addBearerAuth()
       .setTitle('Booking')
       .setDescription('The Booking API documentation')
       .setVersion('1.0')

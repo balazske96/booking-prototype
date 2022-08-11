@@ -22,7 +22,7 @@ import { BookingApprovedMail } from 'src/email/infrastructure/booking-approved-m
 import { BookingCanceledMail } from 'src/email/infrastructure/booking-canceled-mail';
 import { BookingArrived } from 'src/email/infrastructure/booking-arrived';
 import { JwtAuthGuard } from 'src/auth/infrastructure/jwt.guard';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('booking')
 @Controller('booking')
@@ -49,6 +49,7 @@ export class BookingController {
     newBooking.time = createBookingDto.time;
     newBooking.lengthOfServiceInMinutes = service.lengthInMinutes;
     newBooking.service = service;
+    newBooking.phone = createBookingDto.phone;
     await newBooking.save();
 
     const bookingArrivedMail = new BookingArrived(newBooking);
@@ -60,6 +61,7 @@ export class BookingController {
     };
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Query() readAllQueryParams: ReadAllBookingDto) {
@@ -78,6 +80,7 @@ export class BookingController {
     };
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: string) {
@@ -89,6 +92,7 @@ export class BookingController {
     };
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Put(':id')
   async update(
@@ -139,6 +143,7 @@ export class BookingController {
     };
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {

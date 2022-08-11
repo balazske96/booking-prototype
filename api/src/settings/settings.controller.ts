@@ -6,7 +6,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/infrastructure/jwt.guard';
 import { UpdateSettingsDto } from './dto/update-settings.dto';
 import { Settings } from './entities/settings.entity';
@@ -14,6 +14,7 @@ import { Settings } from './entities/settings.entity';
 @ApiTags('settings')
 @Controller('settings')
 export class SettingsController {
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post()
   async updateSettings(@Body() updateSettings: UpdateSettingsDto) {

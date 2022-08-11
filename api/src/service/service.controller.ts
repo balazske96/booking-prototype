@@ -10,7 +10,7 @@ import {
   UseInterceptors,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/infrastructure/jwt.guard';
 
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -20,6 +20,7 @@ import { Service } from './entities/service.entity';
 @ApiTags('service')
 @Controller('service')
 export class ServiceController {
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @Post()
@@ -71,6 +72,7 @@ export class ServiceController {
     };
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @Put(':id')
@@ -108,6 +110,7 @@ export class ServiceController {
     };
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
