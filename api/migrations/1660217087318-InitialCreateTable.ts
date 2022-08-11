@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class InitialCreateTable1660204913896 implements MigrationInterface {
-  name = 'InitialCreateTable1660204913896';
+export class InitialCreateTable1660217087318 implements MigrationInterface {
+  name = 'InitialCreateTable1660217087318';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -11,7 +11,7 @@ export class InitialCreateTable1660204913896 implements MigrationInterface {
       `CREATE TABLE \`settings\` (\`id\` tinyint NOT NULL, \`monday_start\` time NOT NULL, \`tuesday_start\` time NOT NULL, \`wednesday_start\` time NOT NULL, \`thurday_start\` time NOT NULL, \`friday_start\` time NOT NULL, \`saturday_start\` time NOT NULL, \`sunday_start\` time NOT NULL, \`monday_end\` time NOT NULL, \`tuesday_end\` time NOT NULL, \`wednesday_end\` time NOT NULL, \`thurday_end\` time NOT NULL, \`friday_end\` time NOT NULL, \`saturday_end\` time NOT NULL, \`sunday_end\` time NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
     await queryRunner.query(
-      `CREATE TABLE \`booking\` (\`id\` varchar(36) NOT NULL, \`date\` date NOT NULL, \`time\` time NOT NULL, \`length_of_service_in_minutes\` smallint NOT NULL, \`email\` varchar(320) NOT NULL, \`phone\` varchar(100) NULL, \`comment\` varchar(200) NULL, \`first_name\` varchar(100) NOT NULL, \`last_name\` varchar(100) NOT NULL, \`status\` enum ('NEW', 'APPROVED', 'CANCELED') NOT NULL DEFAULT 'NEW', \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`deleted_at\` datetime(6) NULL, \`serviceId\` varchar(36) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
+      `CREATE TABLE \`booking\` (\`id\` varchar(36) NOT NULL, \`date\` date NOT NULL, \`time\` time NOT NULL, \`length_of_service_in_minutes\` smallint NOT NULL, \`email\` varchar(320) NOT NULL, \`phone\` varchar(100) NOT NULL, \`comment\` varchar(200) NULL, \`first_name\` varchar(100) NOT NULL, \`last_name\` varchar(100) NOT NULL, \`status\` enum ('NEW', 'APPROVED', 'CANCELED') NOT NULL DEFAULT 'NEW', \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`deleted_at\` datetime(6) NULL, \`serviceId\` varchar(36) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
     await queryRunner.query(
       `CREATE TABLE \`service\` (\`id\` varchar(36) NOT NULL, \`display_name\` varchar(100) NOT NULL, \`description\` varchar(300) NOT NULL, \`length_in_minutes\` smallint NOT NULL, \`created_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), UNIQUE INDEX \`IDX_0e6c3af2fdcaf32ba1d3c55609\` (\`display_name\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,

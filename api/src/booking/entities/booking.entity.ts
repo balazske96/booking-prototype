@@ -30,7 +30,7 @@ export class Booking extends BaseEntity {
   @Column('varchar', { nullable: false, name: 'email', length: 320 })
   email: string;
 
-  @Column('varchar', { length: 100, nullable: true })
+  @Column('varchar', { length: 100 })
   phone: string;
 
   @Column('varchar', { length: 200, name: 'comment', nullable: true })

@@ -21,8 +21,7 @@ export class CreateBookingDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
+  @ApiProperty()
   @IsString()
   @Matches(/((?:\+?3|0)6)(?:-|\()?(\d{1,2})(?:-|\))?(\d{3})-?(\d{3,4})/)
   phone: string;
