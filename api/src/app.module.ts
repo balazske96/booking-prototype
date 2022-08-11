@@ -4,7 +4,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BookingModule } from './booking/booking.module';
 import { ServiceModule } from './service/service.module';
 import { SettingsModule } from './settings/settings.module';
-import { HolidayModule } from './holiday/holiday.module';
 import { AuthModule } from './auth/auth.module';
 import { EmailModule } from './email/email.module';
 import { join } from 'path';
@@ -25,7 +24,6 @@ import { join } from 'path';
         entities: [join(__dirname, '**', '*.entity.{ts,js}')],
       }),
     }),
-    HolidayModule,
     BookingModule,
     ServiceModule,
     SettingsModule,
