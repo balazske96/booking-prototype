@@ -22,7 +22,9 @@ import { BookingApprovedMail } from 'src/email/infrastructure/booking-approved-m
 import { BookingCanceledMail } from 'src/email/infrastructure/booking-canceled-mail';
 import { BookingArrived } from 'src/email/infrastructure/booking-arrived';
 import { JwtAuthGuard } from 'src/auth/infrastructure/jwt.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('booking')
 @Controller('booking')
 export class BookingController {
   constructor(private emailService: EmailService) {}

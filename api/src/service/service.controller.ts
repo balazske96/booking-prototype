@@ -10,12 +10,14 @@ import {
   UseInterceptors,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/infrastructure/jwt.guard';
 
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { Service } from './entities/service.entity';
 
+@ApiTags('service')
 @Controller('service')
 export class ServiceController {
   @UseGuards(JwtAuthGuard)
