@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
@@ -18,16 +14,15 @@ export class AuthService {
     const user = await User.getUserByIdentifier(identifier);
 
     if (!user)
-      throw new BadRequestException('username, email or password is wrong');
+      throw new UnauthorizedException('username, email or password is wrong');
 
-    const passwordIsCorrect = await argon2.verify(
-      user.passwordHash,
-      `${password}${user.passwordSalt}`,
-    );
+    const passwordIsCorrect = await argon2.verify(user.passwordHash, password, {
+      salt: Buffer.from(user.passwordSalt),
+      type: argon2.argon2id,
+    });
 
-    if (!passwordIsCorrect) {
-      throw new BadRequestException('username, email or password is wrong');
-    }
+    if (!passwordIsCorrect)
+      throw new UnauthorizedException('username, email or password is wrong');
   }
 
   generateRefreshToken(user: User) {

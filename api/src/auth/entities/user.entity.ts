@@ -53,7 +53,10 @@ export class User extends BaseEntity {
     password: string,
     salt: string,
   ): Promise<string> {
-    return await argon2.hash(`${password}${salt}`, { type: argon2.argon2id });
+    return await argon2.hash(password, {
+      type: argon2.argon2id,
+      salt: Buffer.from(salt),
+    });
   }
 
   static generateSalt(): string {
