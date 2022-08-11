@@ -9,7 +9,11 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (
+    process.env.SWAGGER !== undefined &&
+    process.env.SWAGGER !== null &&
+    process.env.SWAGGER === 'true'
+  ) {
     const config = new DocumentBuilder()
       .addBearerAuth()
       .setTitle('Booking')
