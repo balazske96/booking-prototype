@@ -89,7 +89,6 @@ export class AuthController {
     user.passwordSalt = passwordSalt;
     user.passwordHash = passwordHash;
     user.email = register.email;
-    user.phone = register.phone;
     user.username = register.username;
     await user.save();
 

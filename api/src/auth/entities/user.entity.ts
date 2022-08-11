@@ -22,9 +22,6 @@ export class User extends BaseEntity {
   @Column('varchar', { length: 320, unique: true })
   email: string;
 
-  @Column('varchar', { length: 100 })
-  phone: string;
-
   @Exclude()
   @Column('varchar', { name: 'refresh_token', length: 1000, nullable: true })
   refreshToken: string;

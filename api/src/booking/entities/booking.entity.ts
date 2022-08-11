@@ -9,7 +9,6 @@ import {
   SelectQueryBuilder,
 } from 'typeorm';
 import { CreateDateColumn, UpdateDateColumn, BaseEntity } from 'typeorm';
-import { BookingContactMethod } from './booking-contact-method.enum';
 import { BookingStatus } from './booking-status.enum';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ReadAllBookingDto } from '../dto/read-all-booking.dto';
@@ -27,13 +26,6 @@ export class Booking extends BaseEntity {
 
   @Column('smallint', { name: 'length_of_service_in_minutes' })
   lengthOfServiceInMinutes: number;
-
-  @Column('enum', {
-    name: 'contact_method',
-    enum: BookingContactMethod,
-    default: BookingContactMethod.EMAIL,
-  })
-  contactMethod: BookingContactMethod;
 
   @Column('varchar', { nullable: false, name: 'email', length: 320 })
   email: string;
