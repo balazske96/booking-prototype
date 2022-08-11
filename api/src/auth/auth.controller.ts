@@ -18,7 +18,7 @@ import { TokenRefreshDto } from './dto/token-refresh.dto';
 import { RegisterUserDto } from './dto/register.dto';
 import { User } from './entities/user.entity';
 import { JwtAuthGuard } from './infrastructure/jwt.guard';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -29,6 +29,7 @@ export class AuthController {
     private readonly authService: AuthService,
   ) {}
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('me')
   getUserInfo(@Req() req) {
@@ -83,6 +84,8 @@ export class AuthController {
     };
   }
 
+  @UseInterceptors(ClassSerializerInterceptor)
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('register')
   async registerUser(@Body() register: RegisterUserDto, @Req() req) {
@@ -114,6 +117,7 @@ export class AuthController {
 
     return {
       message: 'ok',
+      data: user,
     };
   }
 }
