@@ -51,6 +51,7 @@ export class AuthService {
   }
 
   generateVerificationLinkForUser(user: User): string {
+    // TODO: reimagine the flow. Acces_token is not good because it gives access to other endpoints even if the username is not provided in the token
     const userInToken = { ...user, username: '' } as User;
     const token = this.generateAccessTokenForUser(userInToken);
     const clientAppUrl = this.configService.get<string>('CLIENT_APP_URL');
