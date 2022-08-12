@@ -13,7 +13,7 @@ export class VerificationToken extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('varchar', { length: 300 })
+  @Column('varchar', { length: 300, unique: true })
   token: string;
 
   @OneToOne(() => User)

@@ -93,10 +93,12 @@ export class AuthController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Post('registrate')
   async registerUser(@Body() register: RegisterUserDto, @Req() req) {
-    await User.validateIfUserExistWithTheSameUsername(register.username);
-    await User.validateIfUserExistWithTheSameEmail(register.email);
+    await this.authService.validateIfUserExistWithTheSameEmail(register.email);
+    await this.authService.validateIfUserExistWithTheSameUsername(
+      register.username,
+    );
 
-    const passwordSalt = User.generateSalt();
+    const passwordSalt = this.authService.generateSalt();
 
     const user = new User();
     user.passwordSalt = passwordSalt;
@@ -105,7 +107,7 @@ export class AuthController {
     await user.save();
 
     const verificationLink =
-      this.authService.generateVerificationLinkForUser(user);
+      await this.authService.generateVerificationLinkForUser(user);
     const verificationMail = new UserVerifyLink(user, verificationLink);
     await this.emailService.sendMailable(verificationMail);
 
