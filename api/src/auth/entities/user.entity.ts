@@ -27,7 +27,7 @@ export class User extends BaseEntity {
   refreshToken: string;
 
   @Exclude()
-  @Column('varchar', { length: 300, name: 'password_hash' })
+  @Column('varchar', { length: 300, name: 'password_hash', nullable: true })
   passwordHash: string;
 
   @Exclude()

@@ -19,6 +19,9 @@ import { RegisterUserDto } from './dto/register.dto';
 import { User } from './entities/user.entity';
 import { JwtAuthGuard } from './infrastructure/jwt.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { PasswordGuard } from './infrastructure/password.guard';
+import { EmailService } from 'src/email/email.service';
+import { UserVerifyLink } from 'src/email/infrastructure/user-verify-link.mail';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -27,6 +30,7 @@ export class AuthController {
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: LoggerService,
     private readonly authService: AuthService,
+    private readonly emailService: EmailService,
   ) {}
 
   @ApiBearerAuth()
@@ -84,26 +88,26 @@ export class AuthController {
     };
   }
 
-  @UseInterceptors(ClassSerializerInterceptor)
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Post('register')
+  @UseGuards(JwtAuthGuard, PasswordGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Post('registrate')
   async registerUser(@Body() register: RegisterUserDto, @Req() req) {
     await User.validateIfUserExistWithTheSameUsername(register.username);
     await User.validateIfUserExistWithTheSameEmail(register.email);
 
     const passwordSalt = User.generateSalt();
-    const passwordHash = await User.generatePasswordHash(
-      register.password,
-      passwordSalt,
-    );
 
     const user = new User();
     user.passwordSalt = passwordSalt;
-    user.passwordHash = passwordHash;
     user.email = register.email;
     user.username = register.username;
     await user.save();
+
+    const verificationLink =
+      this.authService.generateVerificationLinkForUser(user);
+    const verificationMail = new UserVerifyLink(user, verificationLink);
+    await this.emailService.sendMailable(verificationMail);
 
     const refreshToken = this.authService.generateRefreshToken(user);
     user.refreshToken = refreshToken;
@@ -119,5 +123,20 @@ export class AuthController {
       message: 'ok',
       data: user,
     };
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PasswordGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Post('update-profil')
+  async updateUserProfil() {
+    // TODO: implement update user profil endpoint
+  }
+
+  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Post('create-password')
+  async createFirstPassword() {
+    // TODO: implement first password generation
   }
 }

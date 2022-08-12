@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
@@ -5,7 +6,10 @@ import * as argon2 from 'argon2';
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtTokenService: JwtService) {}
+  constructor(
+    private readonly jwtTokenService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async validateUserCredentials(
     identifier: string,
@@ -13,16 +17,19 @@ export class AuthService {
   ): Promise<void> {
     const user = await User.getUserByIdentifier(identifier);
 
-    if (!user)
-      throw new UnauthorizedException('username, email or password is wrong');
+    if (!user) throw new UnauthorizedException('invalid credentials');
 
+    this.validatePasswordForUser(user, password);
+  }
+
+  async validatePasswordForUser(user: User, password: string) {
     const passwordIsCorrect = await argon2.verify(user.passwordHash, password, {
       salt: Buffer.from(user.passwordSalt),
       type: argon2.argon2id,
     });
 
     if (!passwordIsCorrect)
-      throw new UnauthorizedException('username, email or password is wrong');
+      throw new UnauthorizedException('invalid credentials');
   }
 
   generateRefreshToken(user: User) {
@@ -41,6 +48,14 @@ export class AuthService {
     };
 
     return this.jwtTokenService.sign(payload);
+  }
+
+  generateVerificationLinkForUser(user: User): string {
+    const userInToken = { ...user, username: '' } as User;
+    const token = this.generateAccessTokenForUser(userInToken);
+    const clientAppUrl = this.configService.get<string>('CLIENT_APP_URL');
+
+    return `${clientAppUrl}?token=${token}`;
   }
 
   validateRefreshToken(token: string) {

@@ -11,8 +11,4 @@ export class RegisterUserDto {
   @IsString()
   @MaxLength(320)
   email: string;
-
-  @ApiProperty({ default: 'admin' })
-  @IsString()
-  password: string;
 }

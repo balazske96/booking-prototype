@@ -92,6 +92,7 @@ export class ServiceController {
     });
 
     if (
+      // TODO: move this validation to Service entity
       serviceWithSameDisplayNameExists &&
       serviceWithSameDisplayNameExists.id !== id
     ) {

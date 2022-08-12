@@ -21,9 +21,9 @@ import { Service } from 'src/service/entities/service.entity';
 import { EmailService } from 'src/email/email.service';
 import { ReadAllBookingDto } from './dto/read-all-booking.dto';
 import { BookingStatus } from './entities/booking-status.enum';
-import { BookingApprovedMail } from 'src/email/infrastructure/booking-approved-mail';
-import { BookingCanceledMail } from 'src/email/infrastructure/booking-canceled-mail';
-import { BookingArrived } from 'src/email/infrastructure/booking-arrived';
+import { BookingApprovedMail } from 'src/email/infrastructure/booking-approved.mail';
+import { BookingCanceledMail } from 'src/email/infrastructure/booking-canceled.mail';
+import { BookingArrived } from 'src/email/infrastructure/booking-arrived.mail';
 import { JwtAuthGuard } from 'src/auth/infrastructure/jwt.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
