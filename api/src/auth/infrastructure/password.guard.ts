@@ -50,7 +50,7 @@ export class PasswordGuard implements CanActivate {
     /**
      * Validate the password
      */
-    const password = payload['guard_password'] ?? '';
+    const password = payload['guardPassword'] ?? '';
     await this.authService.validatePasswordForUser(actualUser, password);
 
     /**

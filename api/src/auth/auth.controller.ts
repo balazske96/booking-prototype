@@ -1,3 +1,4 @@
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   Controller,
@@ -134,8 +135,8 @@ export class AuthController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, PasswordGuard)
   @UseInterceptors(ClassSerializerInterceptor)
-  @Post('update-profil')
-  async updateUserProfil() {
+  @Post('update-profile')
+  async updateUserProfil(@Body() updateProfileDto: UpdateProfileDto) {
     // TODO: implement update user profil endpoint
   }
 
