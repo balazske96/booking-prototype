@@ -38,8 +38,7 @@ export class PasswordGuard implements CanActivate {
     }
 
     /**
-     * Validate if the user from the access_token exists at all and the user provided password
-     * for this request is valid for that user.
+     * Validate if the user from the access_token exists at all
      */
     const actualUser = await User.findOneBy({ id: user.id });
 
