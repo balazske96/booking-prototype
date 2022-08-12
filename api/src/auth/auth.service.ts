@@ -3,17 +3,22 @@ import { ConfigService } from '@nestjs/config';
 import {
   HttpException,
   HttpStatus,
+  Inject,
   Injectable,
+  LoggerService,
   UnauthorizedException,
 } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import * as crypto from 'crypto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
     private readonly jwtTokenService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -99,6 +104,47 @@ export class AuthService {
     });
   }
 
+  async validateVerificationToken(username: string, token: string) {
+    const tokenEntity = await VerificationToken.findOne({
+      where: { token: token },
+      relations: ['user'],
+    });
+
+    if (!tokenEntity) {
+      this.logger.log(`token entity not found for token: '${token}'`);
+      throw new UnauthorizedException();
+    }
+
+    const ownerOfToken = tokenEntity.user;
+
+    if (!ownerOfToken) {
+      this.logger.log(`owner not found for token: '${token}'`);
+      throw new UnauthorizedException();
+    }
+
+    if (username !== ownerOfToken.username)
+      throw new HttpException(
+        {
+          message: 'invalid credentials',
+          errors: {
+            username: ['invalid username'],
+          },
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+
+    if (!!ownerOfToken.passwordHash)
+      throw new HttpException(
+        {
+          message: 'invalid credentials',
+          errors: {
+            password: ['password already exists for the user'],
+          },
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
+  }
+
   generateSalt(): string {
     const hashAsBytes = crypto.randomBytes(16);
     return hashAsBytes.toString('base64');
@@ -132,5 +178,16 @@ export class AuthService {
         },
         HttpStatus.BAD_REQUEST,
       );
+  }
+
+  async sanitizeVerificationToken(token: string) {
+    const tokenEntity = await VerificationToken.findOneBy({ token });
+
+    if (!tokenEntity) {
+      this.logger.log(`token entity not found for token: '${token}'`);
+      throw new UnauthorizedException();
+    }
+
+    await tokenEntity.remove();
   }
 }

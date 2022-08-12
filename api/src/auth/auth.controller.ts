@@ -11,6 +11,7 @@ import {
   UnauthorizedException,
   Inject,
   LoggerService,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -22,6 +23,9 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PasswordGuard } from './infrastructure/password.guard';
 import { EmailService } from 'src/email/email.service';
 import { UserVerifyLink } from 'src/email/infrastructure/user-verify-link.mail';
+import { VerificationTokenDto } from './dto/validate-verification-token.dto';
+import { VerificationToken } from './entities/verification-token.entity';
+import { CreatePasswordDto } from './dto/create-password.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -135,10 +139,47 @@ export class AuthController {
     // TODO: implement update user profil endpoint
   }
 
-  @ApiBearerAuth()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Get('verification-token')
+  async validateVerificationToken(
+    @Query() verificationToken: VerificationTokenDto,
+  ) {
+    const token = await VerificationToken.findOneBy({
+      token: verificationToken.token,
+    });
+
+    if (!token) throw new UnauthorizedException();
+
+    return {
+      message: 'ok',
+    };
+  }
+
   @UseInterceptors(ClassSerializerInterceptor)
   @Post('create-password')
-  async createFirstPassword() {
-    // TODO: implement first password generation
+  async createFirstPassword(
+    @Body() createPasswordDto: CreatePasswordDto,
+    @Query('token') token: string,
+  ) {
+    const username = createPasswordDto.username;
+    const passoword = createPasswordDto.password;
+
+    await this.authService.validateVerificationToken(username, token);
+
+    const user = await User.findOneBy({ username });
+
+    const passwordHash = await this.authService.generatePasswordHash(
+      passoword,
+      user.passwordSalt,
+    );
+
+    user.passwordHash = passwordHash;
+    await user.save();
+
+    await this.authService.sanitizeVerificationToken(token);
+
+    return {
+      message: 'ok',
+    };
   }
 }
