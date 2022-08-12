@@ -87,29 +87,13 @@ export class ServiceController {
     @Param('id') id: string,
     @Body() updateServiceDto: UpdateServiceDto,
   ) {
-    const serviceWithSameDisplayNameExists = await Service.findOneBy({
-      displayName: updateServiceDto.displayName,
-    });
-
-    if (
-      // TODO: move this validation to Service entity
-      serviceWithSameDisplayNameExists &&
-      serviceWithSameDisplayNameExists.id !== id
-    ) {
-      return {
-        errors: {
-          displayName: ['service with the same displayname already exists'],
-        },
-        message: 'service with the same displayname already exists',
-      };
-    }
+    const displayName = updateServiceDto.displayName;
+    await Service.validateIfServiceExistsWithTheSameDisplayName(displayName);
 
     const serviceToFind = await Service.getById(id);
-
     serviceToFind.description = updateServiceDto.description;
     serviceToFind.displayName = updateServiceDto.displayName;
     serviceToFind.lengthInMinutes = updateServiceDto.lengthInMinutes;
-
     serviceToFind.save();
 
     this.logger.log({
