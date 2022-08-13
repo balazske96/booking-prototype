@@ -136,8 +136,28 @@ export class AuthController {
   @UseGuards(JwtAuthGuard, PasswordGuard)
   @UseInterceptors(ClassSerializerInterceptor)
   @Post('update-profile')
-  async updateUserProfil(@Body() updateProfileDto: UpdateProfileDto) {
-    // TODO: implement update user profil endpoint
+  async updateUserProfil(
+    @Body() updateProfileDto: UpdateProfileDto,
+    @Req() request,
+  ) {
+    const userId = request.user.id ?? '';
+    const user = await User.getById(userId);
+
+    if (!!updateProfileDto.email) user.email = updateProfileDto.email;
+    if (!!updateProfileDto.username) user.username = updateProfileDto.username;
+    if (!!updateProfileDto.newPassword) {
+      user.passwordHash = await this.authService.generatePasswordHash(
+        updateProfileDto.newPassword,
+        user.passwordSalt,
+      );
+    }
+
+    await user.save();
+
+    return {
+      message: 'ok',
+      data: user,
+    };
   }
 
   @UseInterceptors(ClassSerializerInterceptor)

@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -43,6 +44,21 @@ export class User extends BaseEntity {
     return this.createQueryBuilder('user')
       .where('user.username = :identifier', { identifier: identifier })
       .orWhere('user.email = :identifier', { identifier: identifier })
-      .getOneOrFail();
+      .getOne();
+  }
+
+  static async getById(id: string) {
+    const user = await User.findOneBy({ id });
+
+    if (!user)
+      throw new HttpException(
+        {
+          message: 'not found',
+          data: { errors: { id: ['user with the given user id not found'] } },
+        },
+        HttpStatus.NOT_FOUND,
+      );
+
+    return user;
   }
 }

@@ -31,7 +31,7 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedException('invalid credentials');
 
-    this.validatePasswordForUser(user, password);
+    await this.validatePasswordForUser(user, password);
   }
 
   async validatePasswordForUser(user: User, password: string) {
