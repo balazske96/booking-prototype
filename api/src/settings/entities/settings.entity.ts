@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity()
@@ -48,6 +49,9 @@ export class Settings extends BaseEntity {
   sundayEnd: string;
 
   static async getSettings(): Promise<Settings> {
-    return Settings.findOneBy({ id: 1 });
+    const settings = await Settings.findOneBy({ id: 1 });
+    if (!settings) throw new NotFoundException('settings not found');
+
+    return settings;
   }
 }

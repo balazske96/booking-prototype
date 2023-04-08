@@ -1,16 +1,38 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BookingModule } from './booking/booking.module';
 import { ServiceModule } from './service/service.module';
 import { SettingsModule } from './settings/settings.module';
-import { HolidayModule } from './holiday/holiday.module';
 import { AuthModule } from './auth/auth.module';
 import { EmailModule } from './email/email.module';
 import { join } from 'path';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
+import 'winston-daily-rotate-file';
+import { LoggerMiddleware } from './infrastructure/middlewares/logger.middleware';
 
 @Module({
   imports: [
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.DailyRotateFile({
+          format: winston.format.combine(
+            winston.format.timestamp({
+              format: 'YYYY-MM-DD HH:mm:ss',
+            }),
+            winston.format.json(),
+          ),
+          json: true,
+          filename: 'booking-%DATE%',
+          extension: '.json',
+          datePattern: 'YYYY-MM-DD',
+          zippedArchive: true,
+          dirname: './logs',
+          maxFiles: '7d',
+        }),
+      ],
+    }),
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -25,7 +47,6 @@ import { join } from 'path';
         entities: [join(__dirname, '**', '*.entity.{ts,js}')],
       }),
     }),
-    HolidayModule,
     BookingModule,
     ServiceModule,
     SettingsModule,
@@ -33,4 +54,8 @@ import { join } from 'path';
     EmailModule,
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

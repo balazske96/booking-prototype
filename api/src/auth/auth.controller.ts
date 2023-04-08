@@ -1,3 +1,5 @@
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   Controller,
   Get,
@@ -8,6 +10,9 @@ import {
   UseInterceptors,
   ClassSerializerInterceptor,
   UnauthorizedException,
+  Inject,
+  LoggerService,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -15,11 +20,25 @@ import { TokenRefreshDto } from './dto/token-refresh.dto';
 import { RegisterUserDto } from './dto/register.dto';
 import { User } from './entities/user.entity';
 import { JwtAuthGuard } from './infrastructure/jwt.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { PasswordGuard } from './infrastructure/password.guard';
+import { EmailService } from 'src/email/email.service';
+import { UserVerifyLink } from 'src/email/infrastructure/user-verify-link.mail';
+import { VerificationTokenDto } from './dto/validate-verification-token.dto';
+import { VerificationToken } from './entities/verification-token.entity';
+import { CreatePasswordDto } from './dto/create-password.dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
+    private readonly authService: AuthService,
+    private readonly emailService: EmailService,
+  ) {}
 
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Get('me')
   getUserInfo(@Req() req) {
@@ -74,28 +93,111 @@ export class AuthController {
     };
   }
 
-  @Post('register')
-  async registerUser(@Body() register: RegisterUserDto) {
-    await User.validateIfUserExistWithTheSameUsername(register.username);
-    await User.validateIfUserExistWithTheSameEmail(register.email);
-
-    const passwordSalt = User.generateSalt();
-    const passwordHash = await User.generatePasswordHash(
-      register.password,
-      passwordSalt,
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PasswordGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Post('registrate')
+  async registerUser(@Body() register: RegisterUserDto, @Req() req) {
+    await this.authService.validateIfUserExistWithTheSameEmail(register.email);
+    await this.authService.validateIfUserExistWithTheSameUsername(
+      register.username,
     );
+
+    const passwordSalt = this.authService.generateSalt();
 
     const user = new User();
     user.passwordSalt = passwordSalt;
-    user.passwordHash = passwordHash;
     user.email = register.email;
-    user.phone = register.phone;
     user.username = register.username;
     await user.save();
+
+    const verificationLink =
+      await this.authService.generateVerificationLinkForUser(user);
+    const verificationMail = new UserVerifyLink(user, verificationLink);
+    await this.emailService.sendMailable(verificationMail);
 
     const refreshToken = this.authService.generateRefreshToken(user);
     user.refreshToken = refreshToken;
     user.save();
+
+    this.logger.log({
+      message: 'new user registered',
+      user: user,
+      userId: req.user.id,
+    });
+
+    return {
+      message: 'ok',
+      data: user,
+    };
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, PasswordGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Post('update-profile')
+  async updateUserProfil(
+    @Body() updateProfileDto: UpdateProfileDto,
+    @Req() request,
+  ) {
+    const userId = request.user.id ?? '';
+    const user = await User.getById(userId);
+
+    if (!!updateProfileDto.email) user.email = updateProfileDto.email;
+    if (!!updateProfileDto.username) user.username = updateProfileDto.username;
+    if (!!updateProfileDto.newPassword) {
+      user.passwordHash = await this.authService.generatePasswordHash(
+        updateProfileDto.newPassword,
+        user.passwordSalt,
+      );
+    }
+
+    await user.save();
+
+    return {
+      message: 'ok',
+      data: user,
+    };
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Get('verification-token')
+  async validateVerificationToken(
+    @Query() verificationToken: VerificationTokenDto,
+  ) {
+    const token = await VerificationToken.findOneBy({
+      token: verificationToken.token,
+    });
+
+    if (!token) throw new UnauthorizedException();
+
+    return {
+      message: 'ok',
+    };
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Post('create-password')
+  async createFirstPassword(
+    @Body() createPasswordDto: CreatePasswordDto,
+    @Query('token') token: string,
+  ) {
+    const username = createPasswordDto.username;
+    const passoword = createPasswordDto.password;
+
+    await this.authService.validateVerificationToken(username, token);
+
+    const user = await User.findOneBy({ username });
+
+    const passwordHash = await this.authService.generatePasswordHash(
+      passoword,
+      user.passwordSalt,
+    );
+
+    user.passwordHash = passwordHash;
+    await user.save();
+
+    await this.authService.sanitizeVerificationToken(token);
 
     return {
       message: 'ok',

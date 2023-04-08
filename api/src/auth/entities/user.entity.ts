@@ -6,10 +6,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import * as argon2 from 'argon2';
-import * as crypto from 'crypto';
 import { Exclude } from 'class-transformer';
-import { BadRequestException } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Entity('user')
 export class User extends BaseEntity {
@@ -22,15 +20,12 @@ export class User extends BaseEntity {
   @Column('varchar', { length: 320, unique: true })
   email: string;
 
-  @Column('varchar', { length: 100 })
-  phone: string;
-
   @Exclude()
   @Column('varchar', { name: 'refresh_token', length: 1000, nullable: true })
   refreshToken: string;
 
   @Exclude()
-  @Column('varchar', { length: 300, name: 'password_hash' })
+  @Column('varchar', { length: 300, name: 'password_hash', nullable: true })
   passwordHash: string;
 
   @Exclude()
@@ -49,36 +44,21 @@ export class User extends BaseEntity {
     return this.createQueryBuilder('user')
       .where('user.username = :identifier', { identifier: identifier })
       .orWhere('user.email = :identifier', { identifier: identifier })
-      .getOneOrFail();
+      .getOne();
   }
 
-  static async generatePasswordHash(
-    password: string,
-    salt: string,
-  ): Promise<string> {
-    return await argon2.hash(`${password}${salt}`, { type: argon2.argon2id });
-  }
+  static async getById(id: string) {
+    const user = await User.findOneBy({ id });
 
-  static generateSalt(): string {
-    const hashAsBytes = crypto.randomBytes(16);
-    return hashAsBytes.toString('base64');
-  }
-
-  static async validateIfUserExistWithTheSameUsername(username: string) {
-    const user = await User.findOneBy({ username: username });
-
-    if (user)
-      throw new BadRequestException(
-        'user with the same username already exists',
+    if (!user)
+      throw new HttpException(
+        {
+          message: 'not found',
+          data: { errors: { id: ['user with the given user id not found'] } },
+        },
+        HttpStatus.NOT_FOUND,
       );
-  }
 
-  static async validateIfUserExistWithTheSameEmail(email: string) {
-    const user = await User.findOneBy({ email: email });
-
-    if (user)
-      throw new BadRequestException(
-        'user with the same email address already exists',
-      );
+    return user;
   }
 }
