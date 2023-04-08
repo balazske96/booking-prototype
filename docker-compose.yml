@@ -1,13 +1,11 @@
 version: '3.1'
 
 services:
-
   smtp:
     image: monsieurbiz/mailcatcher
     ports:
       - '25:1025'
       - '1080:1080'
-
 
   mysql:
     image: mysql
@@ -24,6 +22,14 @@ services:
       - "3306:3306"
     volumes:
       - mysql_volume:/var/lib/mysql
-  
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_PASSWORD: password
+      PMA_USER: root
+      PMA_HOST: mysql
+    ports:
+      - 8080:80
 volumes:
   mysql_volume:
